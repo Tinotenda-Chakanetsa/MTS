@@ -1,0 +1,85 @@
+{% extends 'layout.html' %}
+
+{% block title %}Refunds{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Refunds</h1>
+    <form method="get" class="row g-3 mb-4">
+        <div class="col-md-4">
+            <select name="account_id" class="form-select">
+                <option value="">All Accounts</option>
+                {% for account in accounts %}
+                    <option value="{{ account.id }}" {% if selected_account_id and selected_account_id == account.id %}selected{% endif %}>{{ account.account_number }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                {% for status in statuses %}
+                    <option value="{{ status }}" {% if selected_status and selected_status == status %}selected{% endif %}>{{ status }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary w-100">Filter</button>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Account</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for refund in refunds.items %}
+                <tr>
+                    <td>{{ refund.reference_number }}</td>
+                    <td>{{ refund.account.account_number if refund.account else refund.account_id }}</td>
+                    <td>{{ refund.request_date.strftime('%Y-%m-%d') if refund.request_date else '-' }}</td>
+                    <td>${{ '{:,.2f}'.format(refund.amount) }}</td>
+                    <td>
+                        <span class="badge bg-{{ 'success' if refund.status == 'Approved' else ('danger' if refund.status == 'Rejected' else ('primary' if refund.status == 'Paid' else 'secondary')) }}">{{ refund.status }}</span>
+                    </td>
+                    {% if 'admin_access' in permissions and refund.status == 'Pending' %}
+                    <td>
+                        <div class="btn-group" role="group">
+                            <a href="{{ url_for('tax.process_refund', refund_id=refund.id, action='approve') }}" class="btn btn-sm btn-success" onclick="return confirm('Are you sure you want to approve this refund?');">Approve</a>
+                            <a href="{{ url_for('tax.process_refund', refund_id=refund.id, action='reject') }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to reject this refund?');">Reject</a>
+                        </div>
+                    </td>
+                    {% else %}
+                    <td>{% if refund.status == 'Approved' %}<span class="text-success">Approved on {{ refund.approval_date.strftime('%Y-%m-%d') if refund.approval_date else '-' }}</span>{% endif %}</td>
+                    {% endif %}
+                </tr>
+                {% else %}
+                <tr><td colspan="6" class="text-center">No refunds found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if refunds.has_prev %}
+                <li class="page-item"><a class="page-link" href="?page={{ refunds.prev_num }}">Previous</a></li>
+            {% endif %}
+            {% for page_num in refunds.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+                {% if page_num %}
+                    <li class="page-item {% if refunds.page == page_num %}active{% endif %}"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+                {% else %}
+                    <li class="page-item disabled"><span class="page-link">…</span></li>
+                {% endif %}
+            {% endfor %}
+            {% if refunds.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ refunds.next_num }}">Next</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+{% endblock %}

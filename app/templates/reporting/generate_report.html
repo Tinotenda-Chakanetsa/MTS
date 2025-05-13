@@ -1,0 +1,671 @@
+{% extends "layout.html" %}
+
+{% block title %}Generate Report - MTS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('reporting.index') }}">Reporting</a></li>
+                    <li class="breadcrumb-item"><a href="{{ url_for('reporting.reports') }}">Reports</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Generate Report</li>
+                </ol>
+            </nav>
+            <h2><i class="fas fa-chart-bar me-2"></i>Generate Report</h2>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Report Parameters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{{ url_for('reporting.generate_report_view') }}">
+                        <div class="mb-3">
+                            <label for="type" class="form-label">Report Type</label>
+                            <select class="form-select" id="type" name="type" required>
+                                <option value="" {% if not report_type %}selected{% endif %}>Select Report Type</option>
+                                <option value="tax_collection" {% if report_type == 'tax_collection' %}selected{% endif %}>Tax Collection Report</option>
+                                <option value="compliance" {% if report_type == 'compliance' %}selected{% endif %}>Compliance Report</option>
+                                <option value="registration" {% if report_type == 'registration' %}selected{% endif %}>Registration Report</option>
+                                <option value="audit" {% if report_type == 'audit' %}selected{% endif %}>Audit Report</option>
+                                <option value="refund" {% if report_type == 'refund' %}selected{% endif %}>Refund Report</option>
+                                <option value="revenue" {% if report_type == 'revenue' %}selected{% endif %}>Revenue Report</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="start_date" class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="end_date" class="form-label">End Date</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="tax_type_id" class="form-label">Tax Type (Optional)</label>
+                            <select class="form-select" id="tax_type_id" name="tax_type_id">
+                                <option value="">All Tax Types</option>
+                                {% for tax_type in tax_types %}
+                                <option value="{{ tax_type.id }}" {% if selected_tax_type_id == tax_type.id %}selected{% endif %}>{{ tax_type.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-sync-alt me-1"></i> Generate Report
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">Export Options</h5>
+                </div>
+                <div class="card-body">
+                    {% if report_data %}
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary" type="button">
+                            <i class="fas fa-file-excel me-1"></i> Export to Excel
+                        </button>
+                        <button class="btn btn-outline-danger" type="button">
+                            <i class="fas fa-file-pdf me-1"></i> Export to PDF
+                        </button>
+                        <button class="btn btn-outline-secondary" type="button">
+                            <i class="fas fa-print me-1"></i> Print Report
+                        </button>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">Generate a report to enable export options</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            {% if report_data %}
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">{{ report_data.title }}</h5>
+                    <small class="text-white-50">Period: {{ report_data.period }}</small>
+                </div>
+                <div class="card-body">
+                    <!-- Report Summary -->
+                    <div class="mb-4">
+                        <h5>Summary</h5>
+                        <div class="row">
+                            {% if report_type == 'tax_collection' %}
+                                <div class="col-md-6">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Total Collected</h6>
+                                            <p class="card-text display-6">${{ "{:,.2f}".format(report_data.summary.total_collected) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Total Payments</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.total_payments }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif report_type == 'compliance' %}
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Filing Compliance</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.filing_compliance_rate }}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Payment Compliance</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.payment_compliance_rate }}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Total Returns</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.total_returns }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif report_type == 'registration' %}
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Total Registrations</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.total_registrations }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Approved</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.approved_count }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Pending</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.pending_count }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif report_type == 'audit' %}
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Total Audits</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.total_audits }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Completed</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.completed }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Additional Assessment</h6>
+                                            <p class="card-text display-6">${{ "{:,.2f}".format(report_data.summary.additional_assessment) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif report_type == 'refund' %}
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Total Refunds</h6>
+                                            <p class="card-text display-6">{{ report_data.summary.total_refunds }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Requested Amount</h6>
+                                            <p class="card-text display-6">${{ "{:,.2f}".format(report_data.summary.requested_amount) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Approved Amount</h6>
+                                            <p class="card-text display-6">${{ "{:,.2f}".format(report_data.summary.approved_amount) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% elif report_type == 'revenue' %}
+                                <div class="col-md-12">
+                                    <div class="card bg-light mb-3">
+                                        <div class="card-body">
+                                            <h6 class="card-title">Total Revenue</h6>
+                                            <p class="card-text display-6">${{ "{:,.2f}".format(report_data.summary.total_revenue) }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Report Details -->
+                    <div class="mb-4">
+                        <h5>Details</h5>
+                        {% if report_type == 'tax_collection' %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Tax Type</th>
+                                            <th>Amount</th>
+                                            <th>Payments</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for detail in report_data.details %}
+                                        <tr>
+                                            <td>{{ detail.tax_type }}</td>
+                                            <td>${{ "{:,.2f}".format(detail.total_amount) }}</td>
+                                            <td>{{ detail.payment_count }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Monthly Breakdown Chart -->
+                            <div class="mt-4">
+                                <h5>Monthly Breakdown</h5>
+                                <canvas id="monthlyChart" width="400" height="200"></canvas>
+                            </div>
+                        {% elif report_type == 'compliance' %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Tax Type</th>
+                                            <th>Total Returns</th>
+                                            <th>Filed Returns</th>
+                                            <th>Compliance Rate</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in report_data.tax_type_compliance %}
+                                        <tr>
+                                            <td>{{ item.tax_type }}</td>
+                                            <td>{{ item.total_returns }}</td>
+                                            <td>{{ item.filed_returns }}</td>
+                                            <td>{{ item.compliance_rate }}%</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Compliance Chart -->
+                            <div class="mt-4">
+                                <h5>Compliance by Tax Type</h5>
+                                <canvas id="complianceChart" width="400" height="200"></canvas>
+                            </div>
+                        {% elif report_type == 'registration' %}
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6>Registrations by Type</h6>
+                                    <canvas id="registrationTypeChart" width="400" height="200"></canvas>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6>Registrations by Status</h6>
+                                    <canvas id="registrationStatusChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                            
+                            <!-- Monthly Trend Chart -->
+                            <div class="mt-4">
+                                <h5>Monthly Registration Trend</h5>
+                                <canvas id="registrationTrendChart" width="400" height="200"></canvas>
+                            </div>
+                        {% elif report_type == 'audit' %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Outcome</th>
+                                            <th>Count</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for outcome in report_data.outcomes %}
+                                        <tr>
+                                            <td>{{ outcome.outcome }}</td>
+                                            <td>{{ outcome.count }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Audit Outcomes Chart -->
+                            <div class="mt-4">
+                                <h5>Audit Outcomes</h5>
+                                <canvas id="auditOutcomeChart" width="400" height="200"></canvas>
+                            </div>
+                        {% elif report_type == 'refund' %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Tax Type</th>
+                                            <th>Count</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for refund in report_data.tax_type_refunds %}
+                                        <tr>
+                                            <td>{{ refund.tax_type }}</td>
+                                            <td>{{ refund.count }}</td>
+                                            <td>${{ "{:,.2f}".format(refund.amount) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Refund Status Chart -->
+                            <div class="mt-4">
+                                <h5>Refund Status</h5>
+                                <canvas id="refundStatusChart" width="400" height="200"></canvas>
+                            </div>
+                        {% elif report_type == 'revenue' %}
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>Tax Type</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in report_data.tax_type_revenue %}
+                                        <tr>
+                                            <td>{{ item.tax_type }}</td>
+                                            <td>${{ "{:,.2f}".format(item.amount) }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- Revenue Trend Chart -->
+                            <div class="mt-4">
+                                <h5>Monthly Revenue Trend</h5>
+                                <canvas id="revenueTrendChart" width="400" height="200"></canvas>
+                            </div>
+                            
+                            <!-- Target vs Actual Chart -->
+                            <div class="mt-4">
+                                <h5>Target vs Actual Revenue</h5>
+                                <canvas id="targetVsActualChart" width="400" height="200"></canvas>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-chart-bar fa-4x text-muted mb-3"></i>
+                    <h4>No Report Generated</h4>
+                    <p class="text-muted">Select report parameters and click "Generate Report" to view data</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if report_data %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if report_type == 'tax_collection' %}
+        // Monthly breakdown chart
+        var monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+        var monthlyChart = new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+                labels: {{ report_data.monthly_breakdown|map(attribute='month')|list|tojson }},
+                datasets: [{
+                    label: 'Monthly Collection',
+                    data: {{ report_data.monthly_breakdown|map(attribute='total')|list|tojson }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 2,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        {% elif report_type == 'compliance' %}
+        // Compliance chart
+        var complianceCtx = document.getElementById('complianceChart').getContext('2d');
+        var complianceChart = new Chart(complianceCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ report_data.tax_type_compliance|map(attribute='tax_type')|list|tojson }},
+                datasets: [{
+                    label: 'Compliance Rate (%)',
+                    data: {{ report_data.tax_type_compliance|map(attribute='compliance_rate')|list|tojson }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                }
+            }
+        });
+        {% elif report_type == 'registration' %}
+        // Registration type chart
+        var typeCtx = document.getElementById('registrationTypeChart').getContext('2d');
+        var typeChart = new Chart(typeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Individuals', 'Non-Individuals', 'Sole Proprietors'],
+                datasets: [{
+                    data: [
+                        {{ report_data.summary.individual_count }},
+                        {{ report_data.summary.non_individual_count }},
+                        {{ report_data.summary.sole_proprietor_count }}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+        
+        // Registration status chart
+        var statusCtx = document.getElementById('registrationStatusChart').getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Approved', 'Pending', 'Rejected'],
+                datasets: [{
+                    data: [
+                        {{ report_data.summary.approved_count }},
+                        {{ report_data.summary.pending_count }},
+                        {{ report_data.summary.rejected_count }}
+                    ],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(255, 99, 132, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(255, 99, 132, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+        
+        // Registration trend chart
+        var trendCtx = document.getElementById('registrationTrendChart').getContext('2d');
+        var trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: {{ report_data.monthly_trend|map(attribute='month')|list|tojson }},
+                datasets: [{
+                    label: 'Registrations',
+                    data: {{ report_data.monthly_trend|map(attribute='count')|list|tojson }},
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 2,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+        {% elif report_type == 'audit' %}
+        // Audit outcome chart
+        var outcomeCtx = document.getElementById('auditOutcomeChart').getContext('2d');
+        var outcomeChart = new Chart(outcomeCtx, {
+            type: 'pie',
+            data: {
+                labels: {{ report_data.outcomes|map(attribute='outcome')|list|tojson }},
+                datasets: [{
+                    data: {{ report_data.outcomes|map(attribute='count')|list|tojson }},
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+        {% elif report_type == 'refund' %}
+        // Refund status chart
+        var statusCtx = document.getElementById('refundStatusChart').getContext('2d');
+        var statusChart = new Chart(statusCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Pending', 'Approved', 'Rejected', 'Paid'],
+                datasets: [{
+                    data: [
+                        {{ report_data.summary.pending }},
+                        {{ report_data.summary.approved }},
+                        {{ report_data.summary.rejected }},
+                        {{ report_data.summary.paid }}
+                    ],
+                    backgroundColor: [
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+        {% elif report_type == 'revenue' %}
+        // Revenue trend chart
+        var trendCtx = document.getElementById('revenueTrendChart').getContext('2d');
+        var trendChart = new Chart(trendCtx, {
+            type: 'line',
+            data: {
+                labels: {{ report_data.monthly_trend|map(attribute='month')|list|tojson }},
+                datasets: [{
+                    label: 'Monthly Revenue',
+                    data: {{ report_data.monthly_trend|map(attribute='amount')|list|tojson }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Target vs Actual chart
+        var targetCtx = document.getElementById('targetVsActualChart').getContext('2d');
+        var targetChart = new Chart(targetCtx, {
+            type: 'bar',
+            data: {
+                labels: {{ report_data.target_comparison|map(attribute='month')|list|tojson }},
+                datasets: [{
+                    label: 'Target',
+                    data: {{ report_data.target_comparison|map(attribute='target')|list|tojson }},
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                    borderColor: 'rgba(255, 99, 132, 1)',
+                    borderWidth: 1
+                }, {
+                    label: 'Actual',
+                    data: {{ report_data.target_comparison|map(attribute='actual')|list|tojson }},
+                    backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        {% endif %}
+    });
+</script>
+{% endif %}
+{% endblock %}

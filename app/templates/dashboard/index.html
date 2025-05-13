@@ -1,0 +1,236 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - MTS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+            <p class="lead">Welcome back, {{ current_user.first_name }}!</p>
+            <hr>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Tax Returns</h6>
+                            <h2 class="mb-0">{{ stats.total_returns if stats and stats.total_returns else 0 }}</h2>
+                        </div>
+                        <i class="fas fa-file-invoice fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="{{ url_for('tax.tax_returns') }}" class="text-white text-decoration-none">View Details</a>
+                    <i class="fas fa-angle-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Payments</h6>
+                            <h2 class="mb-0">${{ "{:,.2f}".format(stats.total_payments if stats and stats.total_payments else 0) }}</h2>
+                        </div>
+                        <i class="fas fa-money-bill-wave fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="{{ url_for('tax.payments') }}" class="text-white text-decoration-none">View Details</a>
+                    <i class="fas fa-angle-right text-white"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Pending Tasks</h6>
+                            <h2 class="mb-0">{{ stats.pending_returns if stats and stats.pending_returns else 0 }}</h2>
+                        </div>
+                        <i class="fas fa-tasks fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="#" class="text-dark text-decoration-none">View Details</a>
+                    <i class="fas fa-angle-right text-dark"></i>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="card-title">Notifications</h6>
+                            <h2 class="mb-0">{{ notifications_count if notifications_count else 0 }}</h2>
+                        </div>
+                        <i class="fas fa-bell fa-3x opacity-50"></i>
+                    </div>
+                </div>
+                <div class="card-footer d-flex align-items-center justify-content-between">
+                    <a href="{{ url_for('dashboard.notifications') }}" class="text-white text-decoration-none">View Details</a>
+                    <i class="fas fa-angle-right text-white"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Calendar & Upcoming Events -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="fas fa-calendar-alt me-2"></i>Upcoming Deadlines</h5>
+                </div>
+                <div class="card-body">
+                    {% if deadlines %}
+                        <div class="list-group">
+                            {% for deadline in deadlines %}
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ deadline.title }}</h6>
+                                        <small class="text-{% if deadline.days_left < 7 %}danger{% elif deadline.days_left < 14 %}warning{% else %}success{% endif %}">
+                                            {{ deadline.days_left if deadline and deadline.days_left else 0 }} days left
+                                        </small>
+                                    </div>
+                                    <p class="mb-1">{{ deadline.description }}</p>
+                                    <small>Due: {{ deadline.due_date.strftime('%d %b, %Y') if deadline and deadline.due_date else 'N/A' }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-calendar-check fa-4x text-muted mb-3"></i>
+                            <p>No upcoming deadlines</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="fas fa-bell me-2"></i>Recent Notifications</h5>
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                        <div class="list-group">
+                            {% for notification in notifications %}
+                                <div class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ notification.title }}</h6>
+                                        <small>{{ notification.created_at.strftime('%d %b, %H:%M') if notification and notification.created_at else 'N/A' }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ notification.message }}</p>
+                                    <small class="text-{{ notification.type }}">{{ notification.type|capitalize }}</small>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('dashboard.notifications') }}" class="btn btn-sm btn-outline-primary">View All Notifications {% if notifications_count > 2 %}<span class="badge bg-primary">{{ notifications_count - 2 }} more</span>{% endif %}</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                            <p>No new notifications</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions and Recent Activity -->
+    <div class="row">
+        <!-- Quick Actions -->
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('tax.file_tax_return') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-file-invoice me-2"></i>File Tax Return
+                        </a>
+                        <a href="{{ url_for('tax.make_payment') }}" class="btn btn-outline-success">
+                            <i class="fas fa-money-bill-wave me-2"></i>Make Payment
+                        </a>
+                        <a href="{{ url_for('tax.request_refund') }}" class="btn btn-outline-info">
+                            <i class="fas fa-hand-holding-usd me-2"></i>Request Refund
+                        </a>
+                        <a href="{{ url_for('tax.file_objection') }}" class="btn btn-outline-warning">
+                            <i class="fas fa-gavel me-2"></i>File Objection
+                        </a>
+                        <a href="{{ url_for('registration.properties') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-home me-2"></i>Register Property
+                        </a>
+                        <a href="{{ url_for('e_services.account_management') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-user-cog me-2"></i>Manage Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="col-md-8 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0"><i class="fas fa-history me-2"></i>Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    {% if activities %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Activity</th>
+                                        <th>Date</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for activity in activities %}
+                                        <tr>
+                                            <td>
+                                                <a href="{{ activity.link }}" class="text-decoration-none">
+                                                    <i class="fas fa-{{ activity.icon }} text-{{ activity.status }} me-2"></i>
+                                                    {{ activity.description }}
+                                                </a>
+                                            </td>
+                                            <td>{{ activity.date.strftime('%d %b, %Y %H:%M') if activity and activity.date else 'N/A' }}</td>
+                                            <td><span class="badge bg-{{ activity.status }}">{{ activity.status|capitalize }}</span></td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('tax.tax_returns') }}" class="btn btn-sm btn-outline-primary me-2">View All Returns</a>
+                            <a href="{{ url_for('tax.payments') }}" class="btn btn-sm btn-outline-success">View All Payments</a>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-history fa-4x text-muted mb-3"></i>
+                            <p>No recent activity</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

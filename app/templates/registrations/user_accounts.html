@@ -1,0 +1,47 @@
+{% extends 'layout.html' %}
+{% block title %}User Accounts{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Accounts for {{ user.full_name }}</h2>
+  {% if accounts %}
+    <div class="table-responsive">
+      <table class="table table-hover">
+        <thead>
+          <tr>
+            <th>Account Number</th>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Created Date</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for account in accounts %}
+          <tr>
+            <td>{{ account.account_number }}</td>
+            <td>{{ account.name }}</td>
+            <td>
+              {% if account.is_active %}
+                <span class="badge bg-success">Active</span>
+              {% else %}
+                <span class="badge bg-danger">Inactive</span>
+              {% endif %}
+            </td>
+            <td>{{ account.created_at.strftime('%Y-%m-%d') }}</td>
+            <td>
+              <a href="{{ url_for('e_services.view_account', account_id=account.id) }}" class="btn btn-sm btn-info">
+                <i class="fas fa-eye"></i> View
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info">
+      <i class="fas fa-info-circle me-2"></i>No accounts found for this user.
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

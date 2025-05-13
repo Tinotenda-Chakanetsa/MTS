@@ -1,0 +1,66 @@
+{% extends 'layout.html' %}
+{% block title %}Collections{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Collections</h2>
+  <form method="get" class="row g-3 mb-3">
+    <div class="col-auto">
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == selected_status %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <select name="type" class="form-select">
+        <option value="">All Types</option>
+        {% for t in collection_types %}
+        <option value="{{ t }}" {% if t == selected_type %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary mb-3">Filter</button>
+    </div>
+  </form>
+  {% if collections.items %}
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Account</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Start Date</th>
+          <th>Due Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for collection in collections.items %}
+        <tr>
+          <td>{{ collection.id }}</td>
+          <td>{{ collection.account.account_number }}</td>
+          <td>{{ collection.collection_type }}</td>
+          <td>
+            <span class="badge bg-{{ 'success' if collection.status == 'Complete' else 'secondary' }}">{{ collection.status }}</span>
+          </td>
+          <td>{{ collection.start_date.strftime('%Y-%m-%d') if collection.start_date else '' }}</td>
+          <td>{{ collection.due_date.strftime('%Y-%m-%d') if collection.due_date else '' }}</td>
+          <td>
+            <a href="{{ url_for('process.view_collection', collection_id=collection.id) }}" class="btn btn-sm btn-info">
+              <i class="fas fa-eye"></i> View
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="alert alert-info">No collections found.</div>
+  {% endif %}
+</div>
+{% endblock %}

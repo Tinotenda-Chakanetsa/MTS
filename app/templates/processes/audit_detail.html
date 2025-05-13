@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+{% block title %}Audit Details{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Audit #{{ audit.id }}</h1>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Audit Information</h3>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <tr>
+                    <th width="30%">Account</th>
+                    <td>{{ audit.account.account_number }}</td>
+                </tr>
+                <tr>
+                    <th>Type</th>
+                    <td>{{ audit.audit_type }}</td>
+                </tr>
+                <tr>
+                    <th>Status</th>
+                    <td>
+                        <span class="badge bg-{{ 'success' if audit.status == 'Completed' else 'secondary' }}">
+                            {{ audit.status }}
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Start Date</th>
+                    <td>{{ audit.start_date.strftime('%Y-%m-%d') if audit.start_date else 'Not started' }}</td>
+                </tr>
+                <tr>
+                    <th>End Date</th>
+                    <td>{{ audit.end_date.strftime('%Y-%m-%d') if audit.end_date else 'Not completed' }}</td>
+                </tr>
+                <tr>
+                    <th>Description</th>
+                    <td>{{ audit.description or 'No description provided' }}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Audit Cases</h3>
+        </div>
+        <div class="card-body">
+            {% if cases %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Case Number</th>
+                            <th>Status</th>
+                            <th>Open Date</th>
+                            <th>Close Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in cases %}
+                        <tr>
+                            <td>{{ case.case_number }}</td>
+                            <td>{{ case.status }}</td>
+                            <td>{{ case.open_date.strftime('%Y-%m-%d') if case.open_date else '' }}</td>
+                            <td>{{ case.close_date.strftime('%Y-%m-%d') if case.close_date else 'Not closed' }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <div class="alert alert-info">No audit cases found for this audit.</div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Audit Findings -->
+    {% if audit.findings %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Audit Findings</h3>
+        </div>
+        <div class="card-body">
+            <pre class="p-3 bg-light">{{ audit.findings }}</pre>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if 'admin_access' in permissions %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3>Administrative Actions</h3>
+        </div>
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <form id="updateStatusForm" action="{{ url_for('process.update_audit_status', audit_id=audit.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="input-group">
+                            <select name="status" class="form-select" required>
+                                <option value="">Select New Status</option>
+                                <option value="Planned">Planned</option>
+                                <option value="In Progress">In Progress</option>
+                                <option value="Under Review">Under Review</option>
+                                <option value="Completed">Completed</option>
+                                <option value="Cancelled">Cancelled</option>
+                            </select>
+                            <button type="submit" class="btn btn-warning">Update Status</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-md-6">
+                    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#newCaseModal">
+                        Create New Case
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Case Modal -->
+    <div class="modal fade" id="newCaseModal" tabindex="-1" aria-labelledby="newCaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newCaseModalLabel">Create New Audit Case</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('process.create_audit_case', audit_id=audit.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="tax_period" class="form-label">Tax Period</label>
+                            <input type="text" class="form-control" id="tax_period" name="tax_period" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Case Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create Case</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <a href="{{ url_for('process.audits') }}" class="btn btn-secondary mt-3">
+        <i class="fas fa-arrow-left"></i> Back to Audits
+    </a>
+</div>
+{% endblock %}

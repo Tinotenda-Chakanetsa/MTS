@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block title %}Account Management - MTS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-user-cog me-2"></i>Account Management</h2>
+            <p class="lead">Manage your taxpayer accounts and information.</p>
+            <hr>
+        </div>
+    </div>
+
+    <!-- Account List -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-users me-2"></i>Your Accounts</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <a href="{{ url_for('e_services.add_account') }}" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Add Account
+                        </a>
+                    </div>
+                    {% if accounts %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Account Number</th>
+                                        <th>Account Name</th>
+                                        <th>Status</th>
+                                        <th>Registration Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for account in accounts %}
+                                    <tr>
+                                        <td>{{ account.account_number }}</td>
+                                        <td>{{ account.name }}</td>
+                                        <td>
+                                            {% if account.is_active %}
+                                                <span class="badge bg-success">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">Inactive</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ account.created_at.strftime('%Y-%m-%d') }}</td>
+                                        <td>
+                                            <a href="{{ url_for('e_services.view_account', account_id=account.id) }}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i> You don't have any accounts yet. Click below to create your first taxpayer account.
+                        </div>
+                        <a href="{{ url_for('e_services.add_account') }}" class="btn btn-success mt-2">
+                            <i class="fas fa-plus"></i> Add Account
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Management Options -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-user-edit text-primary me-2"></i>Update Profile</h5>
+                    <p class="card-text">Update your personal information, contact details, and communication preferences.</p>
+                    <a href="{{ url_for('auth.profile') }}" class="btn btn-primary">Update Profile</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-shield-alt text-success me-2"></i>Security Settings</h5>
+                    <p class="card-text">Manage your password, set up two-factor authentication, and review account activity.</p>
+                    <a href="{{ url_for('auth.setup_2fa') }}" class="btn btn-success">Security Settings</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-file-invoice text-info me-2"></i>Statements</h5>
+                    <p class="card-text">View and download your account statements, tax certificates, and other documents.</p>
+                    <a href="#" class="btn btn-info text-white">View Statements</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

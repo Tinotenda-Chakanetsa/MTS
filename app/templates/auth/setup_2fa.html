@@ -1,0 +1,64 @@
+{% extends "layout.html" %}
+{% block title %}Setup Two-Factor Authentication{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Setup Two-Factor Authentication</h3>
+                </div>
+                <div class="card-body">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-7">
+                            <h5 class="text-primary mb-3">Enhance Your Account Security</h5>
+                            <p class="text-muted">Two-factor authentication adds an extra layer of security to your account. After enabling, you'll need both your password and a verification code to log in.</p>
+                            
+                            <div class="alert alert-info">
+                                <h6 class="alert-heading"><i class="fas fa-info-circle me-2"></i>How to set up:</h6>
+                                <ol class="mb-0">
+                                    <li>Download an authenticator app like Google Authenticator or Authy</li>
+                                    <li>Scan the QR code with your app</li>
+                                    <li>Enter the 6-digit code from your app below</li>
+                                </ol>
+                            </div>
+                            
+                            <form method="post" class="mt-4">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="mb-3">
+                                    <label for="token" class="form-label">Authentication Code</label>
+                                    <input type="text" name="token" id="token" class="form-control" placeholder="123456" required>
+                                    <div class="form-text">Enter the 6-digit code from your authenticator app</div>
+                                </div>
+                                <div class="d-flex mt-4">
+                                    <button type="submit" class="btn btn-primary me-2"><i class="fas fa-check me-2"></i>Enable Two-Factor Authentication</button>
+                                    <a href="{{ url_for('auth.profile') }}" class="btn btn-outline-secondary">Cancel</a>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <div class="col-md-5 text-center d-flex flex-column align-items-center justify-content-center">
+                            <p class="fw-bold mb-3">Scan with your authenticator app</p>
+                            <div class="bg-light p-3 rounded mx-auto" style="width: 200px;">
+                                <img src="data:image/png;base64,{{ qr_code }}" alt="2FA QR code" class="img-fluid" style="max-width: 180px;" />
+                            </div>
+                            <div class="mt-3 small bg-light p-2 rounded">
+                                <span class="d-block text-muted mb-1">Or enter this secret manually:</span>
+                                <code class="user-select-all">{{ secret }}</code>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

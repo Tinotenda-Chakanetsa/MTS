@@ -1,0 +1,331 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboards - MTS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('reporting.index') }}">Reporting</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Dashboards</li>
+                </ol>
+            </nav>
+            <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboards</h2>
+            <p class="lead">Interactive dashboards with real-time metrics and KPIs</p>
+            <hr>
+        </div>
+    </div>
+
+    <!-- Tax Collection by Type -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">Tax Collection by Type</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <canvas id="taxCollectionChart" width="400" height="200"></canvas>
+                        </div>
+                        <div class="col-md-4">
+                            <h5 class="mb-3">Collection Summary</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th>Tax Type</th>
+                                            <th>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="taxCollectionTable">
+                                        <!-- Populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Collection Trend -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="card-title mb-0">Monthly Collection Trend</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="monthlyTrendChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Compliance Rates -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-info text-white">
+                    <h5 class="card-title mb-0">Filing Compliance by Tax Type</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="complianceChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-header bg-warning">
+                    <h5 class="card-title mb-0">Registration Statistics</h5>
+                </div>
+                <div class="card-body">
+                    <canvas id="registrationChart" width="400" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Key Performance Indicators -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-secondary text-white">
+                    <h5 class="card-title mb-0">Key Performance Indicators</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">Total Revenue</h6>
+                                    <p class="display-6 mb-0" id="totalRevenue">$0</p>
+                                    <small class="text-success">+5.2% from last year</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">Filing Compliance</h6>
+                                    <p class="display-6 mb-0" id="filingCompliance">0%</p>
+                                    <small class="text-success">+2.1% from last year</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">New Registrations</h6>
+                                    <p class="display-6 mb-0" id="newRegistrations">0</p>
+                                    <small class="text-success">+12.5% from last year</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6 class="card-title text-muted">Tax Gap</h6>
+                                    <p class="display-6 mb-0" id="taxGap">0%</p>
+                                    <small class="text-success">-1.8% from last year</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Parse data from server
+        const taxCollectionData = JSON.parse('{{ tax_collection_data|safe }}');
+        const monthlyTrend = JSON.parse('{{ monthly_trend|safe }}');
+        const complianceData = JSON.parse('{{ compliance_data|safe }}');
+        const registrationData = JSON.parse('{{ registration_data|safe }}');
+        
+        // Calculate total revenue for KPI
+        let totalRevenue = 0;
+        taxCollectionData.forEach(item => {
+            totalRevenue += item.amount;
+        });
+        
+        // Update KPI values
+        document.getElementById('totalRevenue').textContent = '$' + totalRevenue.toLocaleString(undefined, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        
+        // Calculate average compliance rate for KPI
+        let totalComplianceRate = 0;
+        complianceData.forEach(item => {
+            totalComplianceRate += item.compliance_rate;
+        });
+        const avgComplianceRate = complianceData.length > 0 ? totalComplianceRate / complianceData.length : 0;
+        document.getElementById('filingCompliance').textContent = avgComplianceRate.toFixed(1) + '%';
+        
+        // Calculate total registrations for KPI
+        let totalRegistrations = 0;
+        registrationData.forEach(item => {
+            totalRegistrations += item.count;
+        });
+        document.getElementById('newRegistrations').textContent = totalRegistrations.toLocaleString();
+        
+        // Set tax gap KPI (placeholder)
+        document.getElementById('taxGap').textContent = '15.0%';
+        
+        // Populate tax collection table
+        const tableBody = document.getElementById('taxCollectionTable');
+        taxCollectionData.forEach(item => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${item.name}</td>
+                <td>$${item.amount.toLocaleString(undefined, {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                })}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+        
+        // Tax Collection Chart
+        const taxCollectionCtx = document.getElementById('taxCollectionChart').getContext('2d');
+        new Chart(taxCollectionCtx, {
+            type: 'bar',
+            data: {
+                labels: taxCollectionData.map(item => item.name),
+                datasets: [{
+                    label: 'Collection Amount',
+                    data: taxCollectionData.map(item => item.amount),
+                    backgroundColor: taxCollectionData.map(item => 
+                        item.is_core ? 'rgba(54, 162, 235, 0.5)' : 'rgba(255, 206, 86, 0.5)'
+                    ),
+                    borderColor: taxCollectionData.map(item => 
+                        item.is_core ? 'rgba(54, 162, 235, 1)' : 'rgba(255, 206, 86, 1)'
+                    ),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '$' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Monthly Trend Chart
+        const monthlyTrendCtx = document.getElementById('monthlyTrendChart').getContext('2d');
+        new Chart(monthlyTrendCtx, {
+            type: 'line',
+            data: {
+                labels: monthlyTrend.map(item => item.month),
+                datasets: [{
+                    label: 'Monthly Collection',
+                    data: monthlyTrend.map(item => item.amount),
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 2,
+                    tension: 0.1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return '$' + context.raw.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Compliance Chart
+        const complianceCtx = document.getElementById('complianceChart').getContext('2d');
+        new Chart(complianceCtx, {
+            type: 'bar',
+            data: {
+                labels: complianceData.map(item => item.name),
+                datasets: [{
+                    label: 'Compliance Rate (%)',
+                    data: complianceData.map(item => item.compliance_rate),
+                    backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                    borderColor: 'rgba(153, 102, 255, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Registration Chart
+        const registrationCtx = document.getElementById('registrationChart').getContext('2d');
+        new Chart(registrationCtx, {
+            type: 'pie',
+            data: {
+                labels: registrationData.map(item => item.name),
+                datasets: [{
+                    data: registrationData.map(item => item.count),
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            }
+        });
+    });
+</script>
+{% endblock %}

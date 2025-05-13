@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}Add Taxpayer Account{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Add Taxpayer Account</h2>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="post" class="row g-3">
+        {{ form.hidden_tag() }}
+        <div class="col-md-6">
+            {{ form.name.label(class="form-label") }}
+            {{ form.name(class="form-control") }}
+        </div>
+        <div class="col-md-6">
+            {{ form.account_number.label(class="form-label") }}
+            {{ form.account_number(class="form-control") }}
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Create Account</button>
+            <a href="{{ url_for('e_services.account_management') }}" class="btn btn-link">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "layout.html" %}
+{% block title %}Tax Return Details{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Tax Return {{ tax_return.reference_number }}</h1>
+    <table class="table table-bordered">
+        <tr><th>Account</th><td>{{ tax_return.account.account_number }}</td></tr>
+        <tr><th>Tax Type</th><td>{{ tax_return.tax_type.name }}</td></tr>
+        <tr><th>Period</th><td>
+            {% if tax_return.period %}
+                {{ tax_return.period.period_code }} ({{ tax_return.period.start_date.strftime('%d %b') }} - {{ tax_return.period.end_date.strftime('%d %b') }})
+            {% else %}
+                -
+            {% endif %}
+        </td></tr>
+        <tr><th>Amount Due</th><td>${{ '{:,.2f}'.format(tax_return.due_amount or 0) }}</td></tr>
+        <tr><th>Status</th><td>{{ tax_return.status }}</td></tr>
+        <tr><th>Filing Date</th><td>{{ tax_return.filing_date.strftime('%d %b %Y') }}</td></tr>
+    </table>
+
+    <h3>Payments</h3>
+    {% if payments %}
+        <ul>
+        {% for p in payments %}
+            <li>{{ p.payment_date.strftime('%d %b %Y') }} - ${{ '{:,.2f}'.format(p.amount) }}</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No payments found.</p>
+    {% endif %}
+
+    <h3>Objections</h3>
+    {% if objections %}
+        <ul>
+        {% for o in objections %}
+            <li>{{ o.filing_date.strftime('%d %b %Y') }} - {{ o.reason }} (Ref: {{ o.reference_number }})</li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>No objections filed.</p>
+    {% endif %}
+
+    <a href="{{ url_for('tax.tax_returns') }}" class="btn btn-secondary mt-3">Back to Returns</a>
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends 'layout.html' %}
+
+{% block title %}File Objection{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1>File Objection</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{{ url_for('tax.objections') }}">Objections</a></li>
+            <li class="breadcrumb-item active" aria-current="page">File Objection</li>
+        </ol>
+    </nav>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-warning text-white">
+            <h5 class="card-title mb-0"><i class="fas fa-gavel me-2"></i>File a Tax Objection</h5>
+        </div>
+        <div class="card-body">
+            <p class="lead">Use this form to file an objection against a tax assessment.</p>
+            
+            <form method="post" class="mt-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                
+                <div class="mb-3">
+                    <label for="tax_return_id" class="form-label">Select Tax Return</label>
+                    <select name="tax_return_id" id="tax_return_id" class="form-select" required>
+                        <option value="">Select Tax Return</option>
+                        {% for tax_return in tax_returns %}
+                        <option value="{{ tax_return.id }}" {% if selected_tax_return and selected_tax_return.id == tax_return.id %}selected{% endif %}>
+                            {{ tax_return.reference_number }} - {{ tax_return.tax_type.name if tax_return.tax_type else 'Unknown' }} - ${{ '{:,.2f}'.format(tax_return.due_amount or 0) }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="reason" class="form-label">Reason for Objection</label>
+                    <textarea name="reason" id="reason" class="form-control" rows="5" required placeholder="Explain why you disagree with the assessment..."></textarea>
+                </div>
+                
+                <div class="form-text mb-3">
+                    <p><i class="fas fa-info-circle me-2 text-primary"></i>Your objection will be reviewed by our tax officers. You may be contacted for additional information.</p>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('tax.objections') }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-warning">Submit Objection</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h5 class="card-title mb-0"><i class="fas fa-info-circle me-2"></i>About Tax Objections</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <h6 class="fw-bold">When to File an Objection</h6>
+                    <ul>
+                        <li>If you believe there's an error in your assessment</li>
+                        <li>If there are extenuating circumstances that weren't considered</li>
+                        <li>If you have new information that wasn't available previously</li>
+                        <li>If you believe the law was applied incorrectly</li>
+                    </ul>
+                </div>
+                <div class="col-md-6">
+                    <h6 class="fw-bold">Objection Process</h6>
+                    <ol>
+                        <li>Submit your objection with detailed reasons</li>
+                        <li>A tax officer will review your case</li>
+                        <li>You may be contacted for additional information</li>
+                        <li>You'll receive a decision within 30 days</li>
+                        <li>If you disagree with the decision, you can appeal</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

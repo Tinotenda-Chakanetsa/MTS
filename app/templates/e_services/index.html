@@ -1,0 +1,151 @@
+{% extends "layout.html" %}
+
+{% block title %}E-Services - MTS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-laptop me-2"></i>E-Services</h2>
+            <p class="lead">Access our electronic services to manage your tax affairs online.</p>
+            <hr>
+        </div>
+    </div>
+
+    <!-- E-Services Cards -->
+    <div class="row mb-5">
+        <div class="col-md-6 col-lg-4 mb-4" id="account-management">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-user-cog text-primary me-2"></i>Account Management</h5>
+                    <p class="card-text">Manage your taxpayer account details, view account statements, and update your information.</p>
+                    <a href="{{ url_for('e_services.account_management') }}" class="btn btn-primary">Access</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4" id="registration">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-user-plus text-success me-2"></i>Registration</h5>
+                    <p class="card-text">Register for various tax types, update your registration details, or deregister from a tax type.</p>
+                    <a href="{{ url_for('registration.index') }}" class="btn btn-success">Access</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4" id="filing">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-file-alt text-info me-2"></i>Filing</h5>
+                    <p class="card-text">File your tax returns online, check filing status, and view your filing history.</p>
+                    <a href="{{ url_for('tax.tax_returns') }}" class="btn btn-info text-white">Access</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4" id="payment">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-money-bill-wave text-warning me-2"></i>Payment</h5>
+                    <p class="card-text">Make tax payments, view payment history, and set up payment plans.</p>
+                    <a href="{{ url_for('tax.payments') }}" class="btn btn-warning">Access</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4" id="tracking">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-search text-danger me-2"></i>Tracking</h5>
+                    <p class="card-text">Track the status of your applications, requests, refunds, and other submissions.</p>
+                    <a href="{{ url_for('process.requests') }}" class="btn btn-danger">Access</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-file-download text-secondary me-2"></i>Documents</h5>
+                    <p class="card-text">Access and download tax certificates, statements, and other important documents.</p>
+                    <a href="{{ url_for('e_services.documents') }}" class="btn btn-secondary">Access</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- User Guide Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>E-Services User Guide</h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="eServicesGuide">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    Getting Started
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#eServicesGuide">
+                                <div class="accordion-body">
+                                    <p>Welcome to the Multi Tax Solution E-Services platform. To get started, you need to:</p>
+                                    <ol>
+                                        <li>Register for an account if you don't already have one</li>
+                                        <li>Log in with your username and password</li>
+                                        <li>Set up two-factor authentication for enhanced security</li>
+                                        <li>Update your profile with your personal and contact information</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    Filing Tax Returns
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#eServicesGuide">
+                                <div class="accordion-body">
+                                    <p>To file a tax return online:</p>
+                                    <ol>
+                                        <li>Navigate to the Filing section</li>
+                                        <li>Select the tax type you want to file</li>
+                                        <li>Choose the applicable tax period</li>
+                                        <li>Fill in the required information</li>
+                                        <li>Upload any supporting documents</li>
+                                        <li>Review and submit your return</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    Making Payments
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#eServicesGuide">
+                                <div class="accordion-body">
+                                    <p>To make a tax payment:</p>
+                                    <ol>
+                                        <li>Navigate to the Payment section</li>
+                                        <li>Select the tax return or liability you want to pay</li>
+                                        <li>Choose your preferred payment method</li>
+                                        <li>Enter the payment amount</li>
+                                        <li>Complete the payment process</li>
+                                        <li>Save or print your payment receipt</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

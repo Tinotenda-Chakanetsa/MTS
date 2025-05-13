@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block title %}Process Management{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1>Process Management</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Process Type</th>
+                    <th>Reference</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for process in processes %}
+                <tr>
+                    <td>{{ process.type }}</td>
+                    <td>{{ process.reference }}</td>
+                    <td><span class="badge bg-{{ 'success' if process.status == 'Completed' else 'secondary' }}">{{ process.status }}</span></td>
+                    <td>{{ process.created_at.strftime('%Y-%m-%d') if process.created_at else '-' }}</td>
+                    <td>
+                        <a href="{{ url_for('processes.view_process', process_id=process.id) }}" class="btn btn-sm btn-info">View</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="5" class="text-center">No processes found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

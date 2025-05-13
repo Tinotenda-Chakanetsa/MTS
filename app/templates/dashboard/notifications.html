@@ -1,0 +1,260 @@
+{% extends "layout.html" %}
+
+{% block title %}Notifications - MTS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="fas fa-bell me-2"></i>Notifications</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('dashboard.index') }}">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Notifications</li>
+                </ol>
+            </nav>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0"><i class="fas fa-bell me-2"></i>All Notifications</h5>
+                    <div>
+                        <a href="#" class="btn btn-sm btn-outline-primary" onclick="markAllAsRead()"><i class="fas fa-check-double me-1"></i>Mark All as Read</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if notifications.items %}
+                        <div class="list-group">
+                            {% for notification in notifications.items %}
+                                <div class="list-group-item list-group-item-action {% if not notification.is_read %}bg-light{% endif %}">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">
+                                            {% if not notification.is_read %}<span class="badge bg-primary me-2">New</span>{% endif %}
+                                            {{ notification.title }}
+                                        </h6>
+                                        <small>{{ notification.created_at.strftime('%d %b %Y, %H:%M') }}</small>
+                                    </div>
+                                    <p class="mb-1">{{ notification.message }}</p>
+                                    <div class="d-flex justify-content-between align-items-center mt-2">
+                                        <small class="text-{% if notification.notification_type == 'Alert' %}danger{% elif notification.notification_type == 'System' %}secondary{% elif notification.notification_type == 'Tax' %}success{% else %}info{% endif %}">
+                                            <i class="fas {% if notification.notification_type == 'Alert' %}fa-exclamation-triangle{% elif notification.notification_type == 'System' %}fa-cog{% elif notification.notification_type == 'Tax' %}fa-file-invoice-dollar{% else %}fa-info-circle{% endif %} me-1"></i>
+                                            {{ notification.notification_type }}
+                                        </small>
+                                        {% if not notification.is_read %}
+                                            <button type="button" class="btn btn-sm btn-outline-secondary mark-read-btn" data-notification-id="{{ notification.id }}">
+                                                Mark as Read
+                                            </button>
+                                        {% else %}
+                                            <span class="text-muted small">Read on {{ notification.read_at.strftime('%d %b %Y, %H:%M') if notification.read_at else '-' }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Pagination -->
+                        <nav aria-label="Notifications pagination" class="mt-4">
+                            <ul class="pagination justify-content-center">
+                                {% if notifications.has_prev %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('dashboard.notifications', page=notifications.prev_num) }}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                
+                                {% for page_num in notifications.iter_pages(left_edge=2, right_edge=2, left_current=2, right_current=2) %}
+                                    {% if page_num %}
+                                        <li class="page-item {% if notifications.page == page_num %}active{% endif %}">
+                                            <a class="page-link" href="{{ url_for('dashboard.notifications', page=page_num) }}">{{ page_num }}</a>
+                                        </li>
+                                    {% else %}
+                                        <li class="page-item disabled">
+                                            <a class="page-link" href="#">...</a>
+                                        </li>
+                                    {% endif %}
+                                {% endfor %}
+                                
+                                {% if notifications.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="{{ url_for('dashboard.notifications', page=notifications.next_num) }}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% else %}
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                            <h5>No Notifications</h5>
+                            <p class="text-muted">You don't have any notifications at the moment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Add event listeners when the document is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all mark-read buttons using event delegation
+    document.addEventListener('click', function(event) {
+        // Check if the clicked element or its parent is a mark-read button
+        const button = event.target.closest('.mark-read-btn');
+        if (button) {
+            const notificationId = button.getAttribute('data-notification-id');
+            markAsRead(notificationId, button);
+        }
+    });
+});
+
+// Function to mark a single notification as read
+function markAsRead(notificationId, buttonElement) {
+    // Get the notification item container
+    const listItem = buttonElement.closest('.list-group-item');
+    
+    // Send AJAX request to mark notification as read
+    fetch(`/dashboard/notifications/mark-read/${notificationId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token() }}'
+        },
+        credentials: 'same-origin'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update the UI to show the notification is read
+            listItem.classList.remove('bg-light');
+            
+            // Remove the 'New' badge
+            const badge = listItem.querySelector('.badge.bg-primary');
+            if (badge) badge.remove();
+            
+            // Replace the button with 'Read on' text
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('en-GB', {
+                day: '2-digit',
+                month: 'short',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            
+            // Create a span with the read timestamp
+            const readSpan = document.createElement('span');
+            readSpan.className = 'text-muted small';
+            readSpan.textContent = `Read on ${formattedDate}`;
+            
+            // Replace the button with the span
+            buttonElement.parentNode.replaceChild(readSpan, buttonElement);
+            
+            // Update the count in the notification card (if we're on the same page)
+            const notificationCount = document.querySelector('.notification-count');
+            if (notificationCount) {
+                const currentCount = parseInt(notificationCount.textContent);
+                if (currentCount > 0) {
+                    notificationCount.textContent = currentCount - 1;
+                }
+            }
+        } else {
+            // Show error if the operation failed
+            alert('Failed to mark notification as read');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while marking the notification as read');
+    });
+}
+
+// Function to mark all notifications as read
+function markAllAsRead() {
+    if (confirm('Are you sure you want to mark all notifications as read?')) {
+        // Send AJAX request to mark all notifications as read
+        fetch('/dashboard/notifications/mark-all-read', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token() }}'
+            },
+            credentials: 'same-origin'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update all notifications in the UI
+                const notifications = document.querySelectorAll('.list-group-item');
+                
+                notifications.forEach(item => {
+                    // Remove 'bg-light' class from all notification items
+                    item.classList.remove('bg-light');
+                    
+                    // Remove 'New' badges
+                    const badge = item.querySelector('.badge.bg-primary');
+                    if (badge) badge.remove();
+                    
+                    // Replace any 'Mark as Read' buttons with timestamp
+                    const button = item.querySelector('.mark-read-btn');
+                    if (button) {
+                        // Get current date for timestamp
+                        const now = new Date();
+                        const formattedDate = now.toLocaleDateString('en-GB', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        
+                        // Create a span with the read timestamp
+                        const readSpan = document.createElement('span');
+                        readSpan.className = 'text-muted small';
+                        readSpan.textContent = `Read on ${formattedDate}`;
+                        
+                        // Replace the button with the span
+                        button.parentNode.replaceChild(readSpan, button);
+                    }
+                });
+                
+                // Show a success message
+                alert(`${data.count} notifications marked as read`);
+                
+                // Update notification count in the header if present
+                const notificationCount = document.querySelector('.notification-count');
+                if (notificationCount) {
+                    notificationCount.textContent = '0';
+                }
+            } else {
+                // Show error if the operation failed
+                alert('Failed to mark all notifications as read');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('An error occurred while marking notifications as read');
+        });
+    }
+}
+</script>
+{% endblock %}

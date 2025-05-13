@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block title %}File Tax Return{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1>File Tax Return</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <form method="post" enctype="multipart/form-data" class="row g-3">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="col-md-4">
+            <label for="account_id" class="form-label">Account</label>
+            <select name="account_id" id="account_id" class="form-select" required>
+                <option value="">Select Account</option>
+                {% for account in accounts %}
+                <option value="{{ account.id }}">{{ account.account_number }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="tax_type_id" class="form-label">Tax Type</label>
+            <select name="tax_type_id" id="tax_type_id" class="form-select" required>
+                <option value="">Select Tax Type</option>
+                {% for tax_type in tax_types %}
+                <option value="{{ tax_type.id }}">{{ tax_type.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="period_id" class="form-label">Tax Period</label>
+            <select name="period_id" id="period_id" class="form-select" required>
+                <option value="">Select Period</option>
+                {% for period in periods %}
+                <option value="{{ period.id }}">{{ period.label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="amount" class="form-label">Amount</label>
+            <input type="number" name="amount" id="amount" class="form-control" min="0" step="0.01" required>
+        </div>
+        <div class="col-md-8">
+            <label for="attachment" class="form-label">Supporting Document (optional)</label>
+            <input type="file" name="attachment" id="attachment" class="form-control">
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Submit Tax Return</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

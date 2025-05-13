@@ -1,0 +1,66 @@
+{% extends 'layout.html' %}
+{% block title %}Agreements{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Agreements</h2>
+  <form method="get" class="row g-3 mb-3">
+    <div class="col-auto">
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        {% for s in statuses %}
+        <option value="{{ s }}" {% if s == selected_status %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <select name="type" class="form-select">
+        <option value="">All Types</option>
+        {% for t in agreement_types %}
+        <option value="{{ t }}" {% if t == selected_type %}selected{% endif %}>{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-auto">
+      <button type="submit" class="btn btn-primary mb-3">Filter</button>
+    </div>
+  </form>
+  {% if agreements.items %}
+  <div class="table-responsive">
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Account</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for agr in agreements.items %}
+        <tr>
+          <td>{{ agr.id }}</td>
+          <td>{{ agr.account.account_number }}</td>
+          <td>{{ agr.agreement_type }}</td>
+          <td>
+            <span class="badge bg-{{ 'success' if agr.status == 'Active' else 'secondary' }}">{{ agr.status }}</span>
+          </td>
+          <td>{{ agr.start_date.strftime('%Y-%m-%d') if agr.start_date else '' }}</td>
+          <td>{{ agr.end_date.strftime('%Y-%m-%d') if agr.end_date else '' }}</td>
+          <td>
+            <a href="{{ url_for('process.view_agreement', agreement_id=agr.id) }}" class="btn btn-sm btn-info">
+              <i class="fas fa-eye"></i> View
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+    <div class="alert alert-info">No agreements found.</div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Registered Properties</h2>
+    {% if 'admin_access' in permissions or 'view_all_accounts' in permissions %}
+        <a href="{{ url_for('registration.new_property_registration') }}" class="btn btn-primary mb-3">Register New Property</a>
+    {% endif %}
+    {% if registrations.items %}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Owner</th>
+                    <th>Location</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for reg in registrations.items %}
+                <tr>
+                    <td>{{ reg.id }}</td>
+                    <td>{{ reg.property.owner_name or 'N/A' }}</td>
+                    <td>{{ reg.property.address or 'N/A' }}</td>
+                    <td>{{ reg.property.property_type or 'N/A' }}</td>
+                    <td>{{ reg.status or 'N/A' }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No properties found.</p>
+    {% endif %}
+</div>
+{% endblock %}

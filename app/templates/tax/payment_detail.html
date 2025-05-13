@@ -1,0 +1,30 @@
+{% extends 'layout.html' %}
+{% block title %}Payment Details{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h1>Payment Details</h1>
+  <dl class="row">
+    <dt class="col-sm-3">Reference</dt>
+    <dd class="col-sm-9">{{ payment.reference_number }}</dd>
+    <dt class="col-sm-3">Account</dt>
+    <dd class="col-sm-9">{{ payment.tax_return.account.account_number }}</dd>
+    <dt class="col-sm-3">Return Ref</dt>
+    <dd class="col-sm-9">{{ payment.tax_return.reference_number }}</dd>
+    <dt class="col-sm-3">Date</dt>
+    <dd class="col-sm-9">{{ payment.payment_date.strftime('%Y-%m-%d') }}</dd>
+    <dt class="col-sm-3">Amount</dt>
+    <dd class="col-sm-9">${{ '{:,.2f}'.format(payment.amount) }}</dd>
+    <dt class="col-sm-3">Method</dt>
+    <dd class="col-sm-9">{{ payment.payment_method }}</dd>
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9"><span class="badge bg-{{ 'success' if payment.status == 'Completed' else 'secondary' }}">{{ payment.status }}</span></dd>
+  </dl>
+  <form method="post">
+    {% if payment.status == 'Pending' and 'view_all_accounts' in permissions %}
+      <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+      <button type="submit" name="action" value="decline" class="btn btn-danger ms-2">Decline</button>
+    {% endif %}
+    <a href="{{ url_for('tax.payments') }}" class="btn btn-secondary ms-2">Back to Payments</a>
+  </form>
+</div>
+{% endblock %}

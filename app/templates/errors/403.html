@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+
+{% block title %}Access Forbidden{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2 text-center">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h1 class="display-1 text-danger">403</h1>
+                    <h2 class="mb-4">Access Forbidden</h2>
+                    <p class="lead">You do not have permission to access this resource.</p>
+                    <hr>
+                    <p>Please contact your administrator if you believe this is an error.</p>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-primary">Return to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,124 @@
+{% extends "layout.html" %}
+
+{% block title %}Register - MTS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>Register</h4>
+                </div>
+                <div class="card-body">
+                    {% if error %}
+                    <div class="alert alert-danger">
+                        {{ error }}
+                    </div>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('auth.register') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="last_name" class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirm_password" class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirm_password" name="confirm_password" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="user_type" class="form-label">User Type</label>
+                            <select class="form-select" id="user_type" name="user_type" required>
+                                <option value="" selected disabled>Select User Type</option>
+                                <option value="individual">Individual</option>
+                                <option value="non_individual">Non-Individual</option>
+                                <option value="agent">Agent</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="accept_terms" name="accept_terms" required>
+                            <label class="form-check-label" for="accept_terms">
+                                I accept the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-user-plus me-1"></i> Register
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center">
+                    Already have an account? <a href="{{ url_for('auth.login') }}">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5>1. Acceptance of Terms</h5>
+                <p>By registering for and using the Multi Tax Solution (MTS) system, you agree to be bound by these Terms and Conditions.</p>
+                
+                <h5>2. User Responsibilities</h5>
+                <p>Users are responsible for maintaining the confidentiality of their account information and for all activities that occur under their account.</p>
+                
+                <h5>3. Privacy Policy</h5>
+                <p>Your use of the MTS system is also governed by our Privacy Policy, which outlines how we collect, use, and protect your personal information.</p>
+                
+                <h5>4. Accuracy of Information</h5>
+                <p>You agree to provide accurate, current, and complete information during the registration process and to update such information to keep it accurate, current, and complete.</p>
+                
+                <h5>5. Compliance with Tax Laws</h5>
+                <p>Users are responsible for ensuring that all tax returns, payments, and other submissions made through the MTS system comply with applicable tax laws and regulations.</p>
+                
+                <h5>6. System Security</h5>
+                <p>Users must not attempt to breach the security of the MTS system or access data not intended for them.</p>
+                
+                <h5>7. Termination</h5>
+                <p>We reserve the right to terminate or suspend your account and access to the MTS system at our sole discretion, without notice, for conduct that we believe violates these Terms and Conditions or is harmful to other users of the MTS system, us, or third parties, or for any other reason.</p>
+                
+                <h5>8. Changes to Terms</h5>
+                <p>We reserve the right to modify these Terms and Conditions at any time. Your continued use of the MTS system following any changes constitutes your acceptance of the revised Terms and Conditions.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

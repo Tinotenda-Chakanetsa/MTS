@@ -1,0 +1,33 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Register New Property</h2>
+    <form method="post">
+        {{ form.hidden_tag() }}
+        {% if form.account_id is defined and form.account_id.choices|length > 0 %}
+        <div class="mb-3">
+            {{ form.account_id.label(class_="form-label") }}
+            {{ form.account_id(class_="form-select") }}
+        </div>
+        {% endif %}
+        <div class="mb-3">
+            {{ form.owner_name.label(class_="form-label") }}
+            {{ form.owner_name(class_="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.location.label(class_="form-label") }}
+            {{ form.location(class_="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.type.label(class_="form-label") }}
+            {{ form.type(class_="form-control") }}
+        </div>
+        <div class="mb-3">
+            {{ form.status.label(class_="form-label") }}
+            {{ form.status(class_="form-select") }}
+        </div>
+        {{ form.submit(class_="btn btn-primary") }}
+        <a href="{{ url_for('registration.properties') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

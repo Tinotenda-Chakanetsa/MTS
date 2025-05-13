@@ -1,0 +1,115 @@
+{% extends "layout.html" %}
+
+{% block title %}Business Analytics - MTS{% endblock %}
+
+{% block content %}
+<div class="container">
+  <nav aria-label="breadcrumb">
+    <ol class="breadcrumb mt-3">
+      <li class="breadcrumb-item"><a href="{{ url_for('reporting.index') }}">Reporting</a></li>
+      <li class="breadcrumb-item active" aria-current="page">Business Analytics</li>
+    </ol>
+  </nav>
+  <h2 class="mt-2"><i class="fas fa-chart-line me-2"></i>Business Analytics</h2>
+  <hr>
+  <div class="row mb-4">
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-info text-white">Tax Collection by Region</div>
+        <div class="card-body">
+          <canvas id="regionChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-success text-white">Taxpayer Segment Analysis</div>
+        <div class="card-body">
+          <canvas id="segmentChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="row mb-4">
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-warning">Tax Gap Analysis</div>
+        <div class="card-body">
+          <canvas id="taxGapChart"></canvas>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="card h-100">
+        <div class="card-header bg-secondary text-white">Compliance Trend Analysis</div>
+        <div class="card-body">
+          <canvas id="complianceTrendChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const regionData = JSON.parse('{{ region_data|safe }}');
+    const segmentData = JSON.parse('{{ segment_data|safe }}');
+    const taxGapData = JSON.parse('{{ tax_gap_data|safe }}');
+    const complianceTrend = JSON.parse('{{ compliance_trend|safe }}');
+
+    // Region Chart
+    new Chart(document.getElementById('regionChart'), {
+      type: 'bar',
+      data: {
+        labels: regionData.map(r => r.name),
+        datasets: [{
+          label: 'Amount',
+          data: regionData.map(r => r.amount),
+          backgroundColor: 'rgba(54, 162, 235, 0.6)'
+        }]
+      }
+    });
+
+    // Segment Chart
+    new Chart(document.getElementById('segmentChart'), {
+      type: 'pie',
+      data: {
+        labels: segmentData.map(s => s.name),
+        datasets: [{
+          data: segmentData.map(s => s.revenue),
+          backgroundColor: ['#4CAF50', '#FFC107', '#2196F3', '#FF5722', '#9C27B0']
+        }]
+      }
+    });
+
+    // Tax Gap Chart
+    new Chart(document.getElementById('taxGapChart'), {
+      type: 'line',
+      data: {
+        labels: taxGapData.map(t => t.year),
+        datasets: [{
+          label: 'Gap %',
+          data: taxGapData.map(t => t.gap_percent),
+          borderColor: 'rgba(255, 193, 7, 0.8)',
+          tension: 0.4
+        }]
+      }
+    });
+
+    // Compliance Trend Chart
+    new Chart(document.getElementById('complianceTrendChart'), {
+      type: 'line',
+      data: {
+        labels: complianceTrend.map(c => c.year),
+        datasets: [
+          { label: 'Filing', data: complianceTrend.map(c => c.filing), borderColor: '#17A2B8' },
+          { label: 'Payment', data: complianceTrend.map(c => c.payment), borderColor: '#28A745' },
+          { label: 'Reporting', data: complianceTrend.map(c => c.reporting), borderColor: '#FFC107' }
+        ]
+      }
+    });
+  });
+</script>
+{% endblock %}

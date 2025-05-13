@@ -1,0 +1,37 @@
+{% extends 'layout.html' %}
+{% block title %}Start New Audit{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Start New Audit</h2>
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="mb-3">
+      <label for="tax_return" class="form-label">Tax Return</label>
+      <select class="form-select" id="tax_return" name="tax_return_id" required>
+        <option value="">Select a return</option>
+        {% for tr in tax_returns %}
+        <option value="{{ tr.id }}">{{ tr.reference_number }} - {{ tr.account.account_number }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="audit_type" class="form-label">Audit Type</label>
+      <select class="form-select" id="audit_type" name="audit_type" required>
+        <option value="">Select type</option>
+        {% for t in audit_types %}
+        <option value="{{ t }}">{{ t }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="mb-3">
+      <label for="start_date" class="form-label">Start Date</label>
+      <input type="date" class="form-control" id="start_date" name="start_date" required>
+    </div>
+    <div class="mb-3">
+      <label for="end_date" class="form-label">End Date</label>
+      <input type="date" class="form-control" id="end_date" name="end_date">
+    </div>
+    <button type="submit" class="btn btn-primary">Submit</button>
+  </form>
+</div>
+{% endblock %}

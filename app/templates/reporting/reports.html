@@ -1,0 +1,37 @@
+{% extends "layout.html" %}
+
+{% block title %}Reports - MTS{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{{ url_for('reporting.index') }}">Reporting</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Reports</li>
+                </ol>
+            </nav>
+            <h2><i class="fas fa-file-alt me-2"></i>Reports</h2>
+            <p class="lead">Generate and view standard and custom reports</p>
+            <hr>
+        </div>
+    </div>
+
+    <div class="row">
+        {% for report in available_reports %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">{{ report.name }}</h5>
+                    <p class="card-text">{{ report.description }}</p>
+                    <a href="{{ url_for('reporting.generate_report_view', type=report.id) }}" class="btn btn-primary">
+                        <i class="fas fa-chart-bar me-1"></i> Generate Report
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
